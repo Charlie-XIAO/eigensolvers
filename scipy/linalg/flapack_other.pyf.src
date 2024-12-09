@@ -1893,21 +1893,100 @@ end subroutine <prefix2>stemr_lwork
 
 subroutine <prefix2>stev(d,e,compute_v,n,z,ldz,work,info)
     ! computes all eigenvalues, and, optionally eigvectors of a real,
-    ! symmetric tridiagonal matrix.
+    ! symmetric tridiagonal matrix, using QR iteration.
 
     callstatement (*f2py_func)((compute_v?"V":"N"),&n,d,e,z,&ldz,work,&info)
     callprotoargument char*,F_INT*,<ctype2>*,<ctype2>*,<ctype2>*,F_INT*,<ctype2>*,F_INT*
 
-    integer optional,intent(in):: compute_v = 1
+    integer optional,intent(in) :: compute_v = 1
     <ftype2> dimension(n),intent(in,out,copy,out=vals) :: d
     integer depend(d),intent(hide),check(n>0) :: n = shape(d,0)
     <ftype2> depend(n),dimension(MAX(n-1,1)),intent(in,copy) :: e
-    integer intent(hide),depend(n) :: ldz=(compute_v?n:1)
+    integer intent(hide),depend(n) :: ldz = (compute_v?n:1)
     <ftype2> dimension(ldz,(compute_v?n:1)),intent(out),depend(n,ldz) :: z
     <ftype2> dimension((compute_v?MAX(1,2*n-2):1)),depend(n),intent(hide) :: work
     integer intent(out) :: info
 
 end subroutine <prefix2>stev
+
+subroutine <prefix2>stevd(d,e,compute_v,n,z,ldz,work,lwork,iwork,liwork,info)
+    ! computes all eigenvalues, and, optionally eigvectors of a real,
+    ! symmetric tridiagonal matrix, using divide and conquer.
+
+    callstatement (*f2py_func)((compute_v?"V":"N"),&n,d,e,z,&ldz,work,&lwork,iwork,&liwork,&info)
+    callprotoargument char*,F_INT*,<ctype2>*,<ctype2>*,<ctype2>*,F_INT*,<ctype2>*,F_INT*,F_INT*,F_INT*,F_INT*
+
+    integer optional,intent(in) :: compute_v = 1
+    <ftype2> dimension(n),intent(in,out,copy,out=vals) :: d
+    integer depend(d),intent(hide),check(n>0) :: n = shape(d,0)
+    <ftype2> depend(n),dimension(n-1),intent(in,copy) :: e
+    integer intent(hide),depend(n) :: ldz = (compute_v?n:1)
+    <ftype2> dimension(ldz,(compute_v?n:1)),intent(out),depend(n,ldz) :: z
+    integer depend(n),optional,intent(in),check(lwork>=((compute_v&&n>1)?1+4*n+n*n:1)) :: lwork = max(((compute_v&&n>1)?1+4*n+n*n:1),1)
+    <ftype2> dimension(lwork),depend(lwork),intent(hide) :: work
+    integer depend(n),optional,intent(in),check(liwork>=((compute_v&&n>1)?3+5*n:1)) :: liwork = ((compute_v&&n>1)?3+5*n:1)
+    integer dimension(MAX(liwork,1)),depend(liwork),intent(hide) :: iwork
+    integer intent(out) :: info
+
+end subroutine <prefix2>stevd
+
+subroutine <prefix2>stevr(d,e,range,vl,vu,il,iu,compute_v,abstol,n,m,w,z,ldz,isuppz,work,lwork,iwork,liwork,info)
+    ! computes selected eigenvalues, and, optionally eigvectors of a real,
+    ! symmetric tridiagonal matrix, using MRRR.
+
+    callstatement (*f2py_func)((compute_v?"V":"N"),(range>0?(range==1?"V":"I"):"A"),&n,d,e,&vl,&vu,&il,&iu,&abstol,&m,w,z,&ldz,isuppz,work,&lwork,iwork,&liwork,&info)
+    callprotoargument char*,char*,F_INT*,<ctype2>*,<ctype2>*,<ctype2>*,<ctype2>*,F_INT*,F_INT*,<ctype2>*,F_INT*,<ctype2>*,<ctype2>*,F_INT*,F_INT*,<ctype2>*,F_INT*,F_INT*,F_INT*,F_INT*
+
+    integer optional,intent(in) :: compute_v = 1
+    <ftype2> dimension(n),intent(in,copy) :: d
+    integer depend(d),intent(hide),check(n>0) :: n = shape(d,0)
+    <ftype2> depend(n),dimension(MAX(n-1,1)),intent(in,copy) :: e
+    integer intent(in) :: range
+    <ftype2> intent(in) :: vl
+    <ftype2> intent(in) :: vu
+    integer intent(in) :: il
+    integer intent(in) :: iu
+    <ftype2> optional,intent(in) :: abstol=0.0
+    integer intent(out) :: m
+    <ftype2> dimension(n),depend(n),intent(out) :: w
+    integer intent(hide),depend(n) :: ldz = (compute_v?n:1)
+    <ftype2> dimension(ldz,(compute_v?n:1)),intent(out),depend(n,ldz) :: z
+    integer dimension((compute_v?2*n:1)),depend(n),intent(hide) :: isuppz
+    integer depend(n),optional,intent(in),check(lwork>=MAX(20*n,1)) :: lwork = max(20*n,1)
+    <ftype2> dimension(MAX(1,lwork)),depend(lwork),intent(hide) :: work
+    integer depend(n),optional,intent(in),check(liwork>=MAX(10*n,1)) :: liwork = (10*n)
+    integer dimension(MAX(1,liwork)),depend(liwork),intent(hide) :: iwork
+    integer intent(out) :: info
+
+end subroutine <prefix2>stevr
+
+subroutine <prefix2>stevx(d,e,range,vl,vu,il,iu,compute_v,abstol,n,m,w,z,ldz,work,iwork,ifail,info)
+    ! computes selected eigenvalues, and, optionally eigvectors of a real,
+    ! symmetric tridiagonal matrix, using bisection.
+
+    callstatement (*f2py_func)((compute_v?"V":"N"),(range>0?(range==1?"V":"I"):"A"),&n,d,e,&vl,&vu,&il,&iu,&abstol,&m,w,z,&ldz,work,iwork,ifail,&info)
+    callprotoargument char*,char*,F_INT*,<ctype2>*,<ctype2>*,<ctype2>*,<ctype2>*,F_INT*,F_INT*,<ctype2>*,F_INT*,<ctype2>*,<ctype2>*,F_INT*,<ctype2>*,F_INT*,F_INT*,F_INT*
+
+    integer optional,intent(in) :: compute_v = 1
+    <ftype2> dimension(n),intent(in,copy) :: d
+    integer depend(d),intent(hide),check(n>0) :: n = shape(d,0)
+    <ftype2> depend(n),dimension(MAX(n-1,1)),intent(in,copy) :: e
+    integer intent(in) :: range
+    <ftype2> intent(in) :: vl
+    <ftype2> intent(in) :: vu
+    integer intent(in) :: il
+    integer intent(in) :: iu
+    <ftype2> optional,intent(in) :: abstol=0.0
+    integer intent(out) :: m
+    <ftype2> dimension(n),depend(n),intent(out) :: w
+    integer intent(hide),depend(n) :: ldz = (compute_v?n:1)
+    <ftype2> dimension(ldz,(compute_v?n:1)),intent(out),depend(n,ldz) :: z
+    <ftype2> dimension(5*n),depend(n),intent(hide) :: work
+    integer dimension(5*n),depend(n),intent(hide) :: iwork
+    integer dimension(n),depend(n),intent(hide) :: ifail
+    integer intent(out) :: info
+
+end subroutine <prefix2>stevx
 
 subroutine <prefix><s,s,h,h>frk(transr,uplo,trans,n,k,nt,ka,alpha,a,lda,beta,c)
     !

@@ -568,7 +568,13 @@ All functions
    dsterf
 
    sstev
+   sstevd
+   sstevr
+   sstevx
    dstev
+   dstevd
+   dstevr
+   dstevx
 
    ssycon
    dsycon
